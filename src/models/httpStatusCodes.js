@@ -73,4 +73,4 @@ const httpStatusCodes = {
   };
 
 
-  module.exports = httpStatusCode;
+  module.exports = httpStatusCodes;

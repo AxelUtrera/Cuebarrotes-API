@@ -1,5 +1,6 @@
 const Logger = require('../config/logger');
 const CustomerLogic = require('../logic/customerLogic');
+const httpStatusCodes = require('../models/httpStatusCodes');
 
 const getAllUsers = async (req, res) => {
     res.json({
@@ -9,7 +10,7 @@ const getAllUsers = async (req, res) => {
 
 
 const createCustomer = async (req, res) => {
-    let resultCode = 500;
+    let resultCode = httpStatusCodes.INTERNAL_SERVER_ERROR;
     let responseMesage = "Customer not created";
 
     try{
