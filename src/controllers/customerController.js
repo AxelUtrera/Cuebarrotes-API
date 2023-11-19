@@ -1,6 +1,6 @@
 const Logger = require('../config/logger');
 const CustomerLogic = require('../logic/customerLogic');
-const httpStatusCodes = require('../models/httpStatusCodes');
+const StatusCode = require('../models/httpStatusCodes');
 
 const getAllUsers = async (req, res) => {
     res.json({
@@ -10,7 +10,7 @@ const getAllUsers = async (req, res) => {
 
 
 const createCustomer = async (req, res) => {
-    let resultCode = httpStatusCodes.INTERNAL_SERVER_ERROR;
+    let resultCode = StatusCode.INTERNAL_SERVER_ERROR;
     let responseMesage = "Customer not created";
 
     try{
@@ -30,7 +30,7 @@ const createCustomer = async (req, res) => {
 
 
 const customerNotRegistered = async (req, res) => {
-    let resultCode = 500;
+    let resultCode = StatusCode.INTERNAL_SERVER_ERROR;
     let isRegistered;
     let response = "Error in customerNotRegistered Controller";
 
@@ -41,10 +41,10 @@ const customerNotRegistered = async (req, res) => {
 
         if(isRegistered == false){
             response = "The customer is not registered";
-            resultCode = 200;
+            resultCode = StatusCode.OK;
         } else {
             response = "The customer is already registered";
-            resultCode = 200;
+            resultCode = StatusCode.OK;
         }
     } catch(error){
         Logger.error(`Error in customerNotRegistered Controller: ${error}`);
@@ -56,8 +56,58 @@ const customerNotRegistered = async (req, res) => {
     })
 }
 
+
+const editCustomerProfile = async (req, res) => {
+    let resultCode = StatusCode.INTERNAL_SERVER_ERROR;
+    let response = "Customer Profile not modified :(";
+
+    try{
+        let customerPhoneNumber = req.params.customerPhoneNumber;
+        let customerProfileModified = req.body;
+
+        resultCode = await CustomerLogic.modifyCustomer(customerPhoneNumber, customerProfileModified);
+        if(resultCode == 200){
+            response = "Customer profile modified succesfully :)"
+        }
+    } catch(error){
+        Logger.error(`There was an error con editCustomerProfile coontroller: ${error}`);
+    }
+
+    return res.status(resultCode).json({
+        code: resultCode,
+        msg: response
+    })
+}
+
+
+const getProductsCatalog = async (req, res) => {
+    let resultCode = StatusCode.INTERNAL_SERVER_ERROR;
+    let responseMessage = "Products not obtained";
+    let response = [];
+
+    try{
+        const productsObtained = await CustomerLogic.getAllProducts();
+        
+        if(productsObtained != null){
+            response = productsObtained;
+            responseMessage = "Products obtained succesfully"
+            resultCode = StatusCode.OK
+        }
+    } catch(error){
+        Logger.error(`There was an error in getProductsCatalog controller: ${error}`)
+    }
+
+    return res.status(resultCode).json({
+        code: resultCode,
+        msg: responseMessage,
+        response
+    })
+}
+
 module.exports = {
     getAllUsers,
     createCustomer,
-    customerNotRegistered
+    customerNotRegistered,
+    editCustomerProfile,
+    getProductsCatalog
 }
