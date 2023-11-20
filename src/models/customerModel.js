@@ -43,7 +43,8 @@ const addressSchema = new mongoose.Schema(
                 type: String,
                 required: true
             }
-        }
+        },
+        _id:false
     }
 )
 
@@ -60,7 +61,7 @@ const paymentMethodSchema = new mongoose.Schema(
         },
         fechaVencimiento:{
             type: String,
-            requiered: true
+            required: true
         },
         cvv:{
             type: Number,
@@ -96,7 +97,6 @@ const orderHistory = new mongoose.Schema(
         }
     }
 )
-
 
 const customerSchema = new mongoose.Schema(
     {
