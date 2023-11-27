@@ -54,11 +54,20 @@ const orderSchema = new mongoose.Schema(
                 type:String
             }
         },
+        total:{
+            type:Number,
+            required:true
+        },
         sucursal:{
             type:String,
             required:true
+        },
+        estado:{
+            type:String,
+            required:true,
+            default:"Creado"
         }
     }
 );
 
-module.exports = mongoose.model('pedidos', orderSchema);
+module.exports = mongoose.model('orders', orderSchema);

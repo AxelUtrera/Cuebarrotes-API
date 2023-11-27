@@ -91,6 +91,26 @@ const addNewAddress = (newAddress, numberPhone) => {
     });
 };
 
+const addNewPaymentMethod = (newPaymentMethod, numberPhone) => {
+    return new Promise((resolve, reject) => {
+        //Busca el usuario por su numero de telefono y agrega una nuevo metodo de pago al array de metodos de pago.
+        Customer.findOneAndUpdate(
+            { numTelefono: numberPhone },
+            { $push: { metodosPago: newPaymentMethod } },
+            { new: true })
+            .then((result) => {
+                if (result) {
+                    resolve(StatusCode.OK);
+                } else {
+                    reject(StatusCode.NOT_FOUND);
+                }
+            })
+            .catch((error) => {
+                Logger.error(`There was an error adding a new payment method: ${error}`);
+                reject(StatusCode.INTERNAL_SERVER_ERROR);
+            })
+    });
+};
 
 const getCustomerByPhone = (phoneNumber) => {
     return new Promise((resolve, reject) => {
@@ -114,27 +134,42 @@ const getOrdersHistoryOfCustomer = (numPhone) => {
         getCustomerByPhone(numPhone)
             .then((customer) => {
                 const numPedidos = customer.historialPedidos.map(pedido => pedido.numPedido);
-                Order.find({numPedido: { $in: numPedidos } })
-                .then((result) => {
-                    if (result.length > 0) {
-                        resolve(result);
-                    } else {
-                        reject(StatusCode.NOT_FOUND);
-                    }
-                })
-                .catch((error) => {
-                    Logger.error(`There was an error at customerLogic: ${error}`);
-                    reject(StatusCode.INTERNAL_SERVER_ERROR);
-                });
+                Order.find({ numPedido: { $in: numPedidos } })
+                    .then((result) => {
+                        if (result.length > 0) {
+                            resolve(result);
+                        } else {
+                            reject(StatusCode.NOT_FOUND);
+                        }
+                    })
+                    .catch((error) => {
+                        Logger.error(`There was an error at customerLogic: ${error}`);
+                        reject(StatusCode.INTERNAL_SERVER_ERROR);
+                    });
             })
-            .catch((error) =>{
+            .catch((error) => {
                 Logger.error(`There was an error at customerLogic: ${error}`);
                 reject(StatusCode.INTERNAL_SERVER_ERROR);
             })
     });
 };
 
-
+const cancelOrder = (numOrder) => {
+    return new Promise((resolve, reject) => {
+        //Busca el pedido por su numero de pedido y cambia el estado a "Cancelado".
+        Order.findOneAndUpdate(
+            { numPedido: numOrder },
+            { estado: "Cancelado" }
+        )
+            .then(() => {
+                resolve(StatusCode.OK);
+            })
+            .catch((error) => {
+                Logger.error(`There was an error changing the state: ${error}`);
+                reject(StatusCode.INTERNAL_SERVER_ERROR);
+            })
+    });
+};
 
 
 
@@ -148,5 +183,7 @@ module.exports = {
     getAllProducts,
     addNewAddress,
     getCustomerByPhone,
-    getOrdersHistoryOfCustomer
+    getOrdersHistoryOfCustomer,
+    cancelOrder,
+    addNewPaymentMethod
 }

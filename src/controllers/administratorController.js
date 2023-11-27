@@ -3,6 +3,27 @@ const AdministratorLogic = require('../logic//administratorLogic');
 const StatusCode = require('../models/httpStatusCodes');
 
 
+const createEmployee = async (req, res) => {
+    let resultCode = StatusCode.INTERNAL_SERVER_ERROR;
+    let response = "Employee not created"
+
+    try{
+        const newEmployee = req.body
+
+        resultCode = await AdministratorLogic.createEmployee(newEmployee);
+        if(resultCode == 200){
+            response = "Employee created succesfully";
+        }
+    } catch(error){
+        Logger.error(`Error in createEmployee controller. ${error}`);
+    }
+
+    return res.status(resultCode).json({
+        code: resultCode,
+        msg: response
+    })
+}
+
 const createProduct = async (req, res) => {
     let resultCode = StatusCode.INTERNAL_SERVER_ERROR;
     let response = "Product not created"
@@ -50,5 +71,6 @@ const addProductToBranch = async (req, res) => {
 
 module.exports = {
     createProduct,
-    addProductToBranch
+    addProductToBranch,
+    createEmployee
 }

@@ -70,7 +70,7 @@ const editCustomerProfile = async (req, res) => {
             response = "Customer profile modified succesfully :)"
         }
     } catch(error){
-        Logger.error(`There was an error con editCustomerProfile coontroller: ${error}`);
+        Logger.error(`There was an error in editCustomerProfile controller: ${error}`);
     }
 
     return res.status(resultCode).json({
@@ -130,6 +130,51 @@ const addNewAddress = async (req, res) => {
     });
 }
 
+const addNewPaymentMethod = async (req, res) => {
+    let statusCode = StatusCode.NOT_FOUND;
+    let responseMessage = `User doesn't exist`;
+    let newPaymentMethod = req.body;
+    let customerPhoneNumber = req.params.customerPhoneNumber;
+
+    try{
+        let customerExists = await CustomerLogic.isCustomerRegister(customerPhoneNumber);
+        if(customerExists){
+            let paymentMethodIsAdded = await CustomerLogic.addNewPaymentMethod(newPaymentMethod, customerPhoneNumber);
+            if(paymentMethodIsAdded === StatusCode.OK){
+                statusCode = StatusCode.OK;
+                responseMessage = "Payment Method added!";
+            }            
+        }
+    }catch(error){
+        Logger.error(`There was an error in addNewPaymentMethod in controllers: ${error}`);
+    }
+
+    return res.status(statusCode).json({
+        code:statusCode,
+        msg: responseMessage
+    });
+}
+
+const cancelOrder = async (req, res) => {
+    let resultCode = StatusCode.INTERNAL_SERVER_ERROR;
+    let response = "Order state not modified :(";
+
+    try{
+        let numOrder = req.params.numOrder;
+
+        resultCode = await CustomerLogic.cancelOrder(numOrder);
+        if(resultCode == 200){
+            response = "Order state modified succesfully :)"
+        }
+    } catch(error){
+        Logger.error(`There was an error in cancelOrder controller: ${error}`);
+    }
+
+    return res.status(resultCode).json({
+        code: resultCode,
+        msg: response
+    })
+}
 
 const getOrdersHistoryOfCustomer = async (req,res) => {
     let statusCode = StatusCode.NOT_FOUND;
@@ -161,5 +206,7 @@ module.exports = {
     editCustomerProfile,
     getProductsCatalog,
     addNewAddress,
-    getOrdersHistoryOfCustomer
+    getOrdersHistoryOfCustomer,
+    addNewPaymentMethod,
+    cancelOrder
 }
