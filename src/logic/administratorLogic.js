@@ -2,8 +2,22 @@ const Logger = require("../config/logger");
 const Product = require("../models/productModel");
 const Branch = require("../models/branchModel");
 const StatusCode = require("../models/httpStatusCodes");
+const Employee = require("../models/employeeModel");
 
+const createEmployee = (newEmployee) => {
+    return new Promise((resolve, reject) => {
+        const employeeToCreate = new Employee(newEmployee);
 
+        employeeToCreate.save()
+        .then(() => {
+            resolve(StatusCode.OK)
+        })
+        .catch((error) => {
+            Logger.error(`There was an error creating the employee: ${error}`);
+            reject(StatusCode.INTERNAL_SERVER_ERROR);
+        })
+    })
+}
 const createProduct = (newProduct) => {
     return new Promise((resolve, reject) => {
         const productToCreate = new Product(newProduct);
@@ -39,5 +53,6 @@ const addProductToBranch = (branchName, productInfo) => {
 
 module.exports = {
     createProduct,
-    addProductToBranch
+    addProductToBranch,
+    createEmployee
 }

@@ -70,7 +70,7 @@ const editCustomerProfile = async (req, res) => {
             response = "Customer profile modified succesfully :)"
         }
     } catch(error){
-        Logger.error(`There was an error con editCustomerProfile coontroller: ${error}`);
+        Logger.error(`There was an error in editCustomerProfile controller: ${error}`);
     }
 
     return res.status(resultCode).json({
@@ -104,10 +104,109 @@ const getProductsCatalog = async (req, res) => {
     })
 }
 
+
+const addNewAddress = async (req, res) => {
+    let statusCode = StatusCode.NOT_FOUND;
+    let responseMessage = `User doesn't exist`;
+    let newAddress = req.body;
+    let customerPhoneNumber = req.params.customerPhoneNumber;
+
+    try{
+        let customerExists = await CustomerLogic.isCustomerRegister(customerPhoneNumber);
+        if(customerExists){
+            let addressIsAdded = await CustomerLogic.addNewAddress(newAddress, customerPhoneNumber);
+            if(addressIsAdded === StatusCode.OK){
+                statusCode = StatusCode.OK;
+                responseMessage = "Address added!";
+            }            
+        }
+    }catch(error){
+        Logger.error(`There was an error in addNewDirection in controllers: ${error}`);
+    }
+
+    return res.status(statusCode).json({
+        code:statusCode,
+        msg: responseMessage
+    });
+}
+
+const addNewPaymentMethod = async (req, res) => {
+    let statusCode = StatusCode.NOT_FOUND;
+    let responseMessage = `User doesn't exist`;
+    let newPaymentMethod = req.body;
+    let customerPhoneNumber = req.params.customerPhoneNumber;
+
+    try{
+        let customerExists = await CustomerLogic.isCustomerRegister(customerPhoneNumber);
+        if(customerExists){
+            let paymentMethodIsAdded = await CustomerLogic.addNewPaymentMethod(newPaymentMethod, customerPhoneNumber);
+            if(paymentMethodIsAdded === StatusCode.OK){
+                statusCode = StatusCode.OK;
+                responseMessage = "Payment Method added!";
+            }            
+        }
+    }catch(error){
+        Logger.error(`There was an error in addNewPaymentMethod in controllers: ${error}`);
+    }
+
+    return res.status(statusCode).json({
+        code:statusCode,
+        msg: responseMessage
+    });
+}
+
+const cancelOrder = async (req, res) => {
+    let resultCode = StatusCode.INTERNAL_SERVER_ERROR;
+    let response = "Order state not modified :(";
+
+    try{
+        let numOrder = req.params.numOrder;
+
+        resultCode = await CustomerLogic.cancelOrder(numOrder);
+        if(resultCode == 200){
+            response = "Order state modified succesfully :)"
+        }
+    } catch(error){
+        Logger.error(`There was an error in cancelOrder controller: ${error}`);
+    }
+
+    return res.status(resultCode).json({
+        code: resultCode,
+        msg: response
+    })
+}
+
+const getOrdersHistoryOfCustomer = async (req,res) => {
+    let statusCode = StatusCode.NOT_FOUND;
+    let responseMessage = `User doesn't exist`;
+    let response = [];
+
+    try{
+        const ordersObtained = await CustomerLogic.getOrdersHistoryOfCustomer(req.params.customerPhoneNumber);
+        if(ordersObtained){
+            response = ordersObtained;
+            statusCode = StatusCode.OK;
+            responseMessage = "Here are his orders";
+        }
+    }catch(error){
+        Logger.error(`There was an error in getHistoryOrdersOFCustomer in controllers: ${error}`);
+    }
+
+    return res.status(statusCode).json({
+        code:statusCode,
+        msg: responseMessage,
+        response
+    });
+}
+
 module.exports = {
     getAllUsers,
     createCustomer,
     customerNotRegistered,
     editCustomerProfile,
-    getProductsCatalog
+    getProductsCatalog,
+    addNewAddress,
+    getOrdersHistoryOfCustomer,
+    addNewPaymentMethod,
+    cancelOrder
 }
