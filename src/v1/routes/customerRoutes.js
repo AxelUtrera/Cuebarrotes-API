@@ -7,6 +7,6 @@ router.get('/', getAllUsers);
 router.post('/registerCustomer', createCustomer);
 router.get('/customerNotRegistered', customerNotRegistered);
 router.patch('/modifyProfile/:customerPhoneNumber', editCustomerProfile);
-router.get('/getProductsCatalog', getProductsCatalog)
+router.get('/getProductsCatalog', getProductsCatalog);
 
 module.exports = router;
