@@ -18,6 +18,8 @@ const createEmployee = (newEmployee) => {
         })
     })
 }
+
+
 const createProduct = (newProduct) => {
     return new Promise((resolve, reject) => {
         const productToCreate = new Product(newProduct);
@@ -51,8 +53,25 @@ const addProductToBranch = (branchName, productInfo) => {
 }
 
 
+const getBranchesInfo = () => {
+    let branchesObtained = []
+
+    return new Promise((resolve, reject) => {
+        branchesObtained = Branch.find({})
+        .then((branchesObtained) => {
+            resolve(branchesObtained)
+        })
+        .catch((error) => {
+            Logger.error(`There was an error recovering the branches: ${error}`)
+            reject(StatusCode.INTERNAL_SERVER_ERROR)
+        })
+    })
+}
+
+
 module.exports = {
     createProduct,
     addProductToBranch,
-    createEmployee
+    createEmployee,
+    getBranchesInfo
 }

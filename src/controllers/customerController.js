@@ -35,16 +35,16 @@ const customerNotRegistered = async (req, res) => {
     let response = "Error in customerNotRegistered Controller";
 
     try{
-        const customerPhone = req.body.numTelefono;
+        const customerPhone = req.params.numTelefono;
 
         isRegistered = await CustomerLogic.isCustomerRegister(customerPhone);
 
-        if(isRegistered == false){
+        if(isRegistered === false){
             response = "The customer is not registered";
             resultCode = StatusCode.OK;
         } else {
             response = "The customer is already registered";
-            resultCode = StatusCode.OK;
+            resultCode = StatusCode.CREATED;
         }
     } catch(error){
         Logger.error(`Error in customerNotRegistered Controller: ${error}`);
@@ -199,6 +199,33 @@ const getOrdersHistoryOfCustomer = async (req,res) => {
     });
 }
 
+
+const getCustomerByPhone = async (req, res) => {
+    let statusCode = StatusCode.NOT_FOUND
+    let responseMessage = "The customer doesn't exist"
+    let response = {}
+
+    try{
+        const phoneNumber = req.params.customerPhone;
+
+        const customerObtained = await CustomerLogic.getCustomerByPhone(phoneNumber)
+        if(customerObtained !== null){
+            statusCode = StatusCode.OK
+            responseMessage = "Customer obtained succesfully"
+            response = customerObtained
+        }
+    }catch(error){
+        Logger.error(`There was an error in getCustomerByPhone controller: ${error}`)
+        statusCode = StatusCode.INTERNAL_SERVER_ERROR
+    }
+
+    return res.status(statusCode).json({
+        code: statusCode,
+        msg: responseMessage,
+        response
+    })
+}
+
 module.exports = {
     getAllUsers,
     createCustomer,
@@ -208,5 +235,6 @@ module.exports = {
     addNewAddress,
     getOrdersHistoryOfCustomer,
     addNewPaymentMethod,
-    cancelOrder
+    cancelOrder,
+    getCustomerByPhone
 }

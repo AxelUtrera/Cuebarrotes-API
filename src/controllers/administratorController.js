@@ -48,29 +48,63 @@ const createProduct = async (req, res) => {
 
 const addProductToBranch = async (req, res) => {
     let resultCode = StatusCode.INTERNAL_SERVER_ERROR;
-    let response = "Product not added to the branch"
+    let response = "Branch information not saved";
 
-    try{
-        const branchName = req.params.branchName;
-        const productInfo = req.body;
+    try {
+        const branchesInfo = req.body;
 
-        resultCode = await AdministratorLogic.addProductToBranch(branchName, productInfo);
-        if(resultCode == 200){
-            response = "Product added to the branch succesfully";
+        const results = await Promise.all(
+            branchesInfo.map(async (branchInfo) => {
+                const result = await AdministratorLogic.addProductToBranch(branchInfo.nombreComercial, branchInfo.inventario.productos);
+
+                return result;
+            })
+        );
+
+        if (results.every(result => result === StatusCode.OK)) {
+            resultCode = StatusCode.OK;
+            response = "Branch information saved successfully";
+        } else {
+            resultCode = StatusCode.INTERNAL_SERVER_ERROR;
+            response = "Error saving branch information";
         }
-    } catch(error){
-        Logger.error(`Error in addProductToBranch controller: ${error}`);
+    } catch (error) {
+        Logger.error(`Error in saveBranchesInfo controller: ${error}`);
     }
 
     return res.status(resultCode).json({
         code: resultCode,
-        msg: response
+        msg: response,
+    });
+};
+
+
+
+const getBranches = async (req, res) => {
+    let resultCode = StatusCode.INTERNAL_SERVER_ERROR
+    let responseMessage = "Branches not obtained :("
+    let response = []
+
+    try{
+        response = await AdministratorLogic.getBranchesInfo()
+        if(response !== null){
+            resultCode = StatusCode.OK
+            responseMessage = "Branches obtained succesfully"
+        }
+    } catch(error){
+        Logger.error(`There was an errror in getBranches controller: ${error}`)
+    }
+
+    return res.status(resultCode).json({
+        code: resultCode,
+        msg: responseMessage,
+        response
     })
 }
-
 
 module.exports = {
     createProduct,
     addProductToBranch,
-    createEmployee
+    createEmployee,
+    getBranches
 }

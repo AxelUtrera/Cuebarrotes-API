@@ -35,11 +35,11 @@ const addressSchema = new mongoose.Schema(
             type: String
         },
         ubicacion:{
-            latitud:{
+            lat:{
                 type: String,
                 required: true
             },
-            longitud:{
+            lng:{
                 type: String,
                 required: true
             }
@@ -105,11 +105,7 @@ const customerSchema = new mongoose.Schema(
             type: String,
             required: true
         },
-        apellidoPaterno:{
-            type: String,
-            required: true
-        },
-        apellidoMaterno:{
+        apellidos:{
             type: String,
             required: true
         },

@@ -9,7 +9,7 @@ const productSchema = new mongoose.Schema(
         },
         imagen:{
             type: String,
-            required: true
+            default: ''
         },
         precioUnitario:{
             type: Number,

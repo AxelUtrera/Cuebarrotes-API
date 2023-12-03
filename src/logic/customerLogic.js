@@ -2,7 +2,7 @@ const Logger = require("../config/logger");
 const Customer = require("../models/customerModel");
 const Product = require("../models/productModel");
 const StatusCode = require("../models/httpStatusCodes");
-const Order = require("../models/order");
+const Order = require("../models/orderModel");
 
 
 const createCustomer = async (newCustomer) => {
@@ -27,7 +27,7 @@ const isCustomerRegister = async (numberPhone) => {
     return new Promise((resolve, reject) => {
         const customerObtained = Customer.findOne({ numTelefono: numberPhone })
             .then((customerObtained) => {
-                if (customerObtained == null) {
+                if (customerObtained === null) {
                     resolve(false);
                 } else {
                     resolve(true);
@@ -172,10 +172,6 @@ const cancelOrder = (numOrder) => {
 };
 
 
-
-
-
-
 module.exports = {
     createCustomer,
     isCustomerRegister,
@@ -185,5 +181,5 @@ module.exports = {
     getCustomerByPhone,
     getOrdersHistoryOfCustomer,
     cancelOrder,
-    addNewPaymentMethod
+    addNewPaymentMethod,
 }
