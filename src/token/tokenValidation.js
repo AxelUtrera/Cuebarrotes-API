@@ -22,7 +22,7 @@ function verifyToken(roles = []) {
 
             next();
         } catch (error) {
-            return res.status(401).send(error.message);
+            return res.status(401).send("Token inválido.");
         }
     };
 }
