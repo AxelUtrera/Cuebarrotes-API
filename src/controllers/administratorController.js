@@ -1,6 +1,7 @@
 const Logger = require('../config/logger');
 const AdministratorLogic = require('../logic//administratorLogic');
 const StatusCode = require('../models/httpStatusCodes');
+const Branch = require('../logic/branchLogic');
 
 
 const createEmployee = async (req, res) => {
@@ -102,9 +103,33 @@ const getBranches = async (req, res) => {
     })
 }
 
+const createBranch = async (req, res) => {
+    let resultCode = StatusCode.INTERNAL_SERVER_ERROR;
+    let response = "Sucursal no creada";
+
+    try {
+        const newBranch = req.body;
+
+        resultCode = await Branch.createBranch(newBranch);
+        if (resultCode == 200) {
+            response = "Sucursal creada exitosamente";
+        }
+    } catch (error) {
+        Logger.error(`Error al crear la sucursal: ${error}`);
+    }
+
+    return res.status(resultCode).json({
+        code: resultCode,
+        msg: response
+    });
+};
+
+
+
 module.exports = {
     createProduct,
     addProductToBranch,
     createEmployee,
-    getBranches
+    getBranches,
+    createBranch
 }

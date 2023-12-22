@@ -21,6 +21,7 @@ class Server {
         this.app.use('/api/v1/customer', require('../v1/routes/customerRoutes'));
         this.app.use('/api/v1/employee', require('../v1/routes/employeeRoutes'));
         this.app.use('/api/v1/administrator', require('../v1/routes/administratorRoutes'));
+        this.app.use('/api/v1/auth', require('../v1/routes/authRoutes'));
     }
 
 
