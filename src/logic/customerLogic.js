@@ -154,6 +154,7 @@ const getOrdersHistoryOfCustomer = (numPhone) => {
     });
 };
 
+
 const cancelOrder = (numOrder) => {
     return new Promise((resolve, reject) => {
         //Busca el pedido por su numero de pedido y cambia el estado a "Cancelado".

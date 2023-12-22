@@ -34,7 +34,10 @@ const EmployeeSchema = new mongoose.Schema(
         rol: {
             type: String,
             required: true
-        }
+        },
+        pedidosAsignados: [
+            String
+        ]
     }
 );
 
