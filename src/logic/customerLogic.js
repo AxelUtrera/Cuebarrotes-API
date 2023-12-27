@@ -133,8 +133,7 @@ const getOrdersHistoryOfCustomer = (numPhone) => {
     return new Promise((resolve, reject) => {
         getCustomerByPhone(numPhone)
             .then((customer) => {
-                const numPedidos = customer.historialPedidos.map(pedido => pedido.numPedido);
-                Order.find({ numPedido: { $in: numPedidos } })
+                Order.find({ numPedido: { $in: customer.historialPedidos } })
                     .then((result) => {
                         if (result.length > 0) {
                             resolve(result);
@@ -150,8 +149,8 @@ const getOrdersHistoryOfCustomer = (numPhone) => {
             .catch((error) => {
                 Logger.error(`There was an error at customerLogic: ${error}`);
                 reject(StatusCode.INTERNAL_SERVER_ERROR);
-            })
-    });
+            })
+    });
 };
 
 const cancelOrder = (numOrder) => {

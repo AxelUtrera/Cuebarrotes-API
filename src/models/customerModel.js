@@ -133,7 +133,7 @@ const customerSchema = new mongoose.Schema(
             ]
         },
         historialPedidos:[
-            orderHistory
+            
         ]
     }
 )
