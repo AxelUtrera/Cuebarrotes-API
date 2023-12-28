@@ -1,6 +1,9 @@
 const Logger = require('../config/logger');
 const CustomerLogic = require('../logic/customerLogic');
+const Customer = require('../models/customerModel');
 const StatusCode = require('../models/httpStatusCodes');
+const Product = require('../models/productModel');
+const jwt = require('jsonwebtoken');
 
 const getAllUsers = async (req, res) => {
     res.json({
@@ -227,6 +230,22 @@ const getOrdersHistoryOfCustomer = async (req,res) => {
 }
 
 
+const getProductByBarcode = async (req, res) => {
+    try {
+      const { codigoBarras } = req.params;
+      const product = await Product.findOne({ codigoBarras: codigoBarras });
+  
+      if (!product) {
+        return res.status(404).send('Producto no encontrado.');
+      }
+  
+      res.json(product);
+    } catch (error) {
+      res.status(500).send('Error en el servidor: ' + error.message);
+    }
+  };
+
+
 const getCustomerByPhone = async (req, res) => {
     let statusCode = StatusCode.NOT_FOUND
     let responseMessage = "The customer doesn't exist"
@@ -253,31 +272,6 @@ const getCustomerByPhone = async (req, res) => {
     })
 }
 
-
-const addProductToCustomerCart = async (req, res) => {
-    let statusCode = StatusCode.NOT_FOUND
-    let responseMessage = "Product no added :("
-
-    try{
-        const phoneNumber = req.params.phoneNumber
-        const productInfo = req.body
-
-        statusCode = await CustomerLogic.addProductToCart(phoneNumber, productInfo)
-        if(statusCode === 200){
-            responseMessage = "Product added succesfully :3"
-        }
-    } catch(error) {
-        Logger.error(`There was an error in addProductToCustomerCart controller: ${error}`)
-        statusCode = StatusCode.INTERNAL_SERVER_ERROR
-    }
-
-    return res.status(statusCode).json({
-        code: statusCode,
-        msg: responseMessage
-    })
-}
-
-
 module.exports = {
     getAllUsers,
     createCustomer,
@@ -290,5 +284,7 @@ module.exports = {
     cancelOrder,
     getCustomerByPhone,
     getProductsByBranch,
-    addProductToCustomerCart
+    addProductToCustomerCart,
+    getProductByBarcode,
+    getCostumerPhoneNumber
 }

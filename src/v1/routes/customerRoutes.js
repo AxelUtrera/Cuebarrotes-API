@@ -1,5 +1,5 @@
 const { Router } = require('express');
-const { getAllUsers, createCustomer, customerNotRegistered, editCustomerProfile, getProductsCatalog, getProductsByBranch, addNewAddress, getOrdersHistoryOfCustomer, addNewPaymentMethod, cancelOrder, getCustomerByPhone, addProductToCustomerCart } = require('../../controllers/customerController');
+const { getAllUsers, createCustomer, customerNotRegistered, editCustomerProfile, getProductsCatalog, getProductsByBranch, addNewAddress, getOrdersHistoryOfCustomer, addNewPaymentMethod, cancelOrder, getCustomerByPhone, addProductToCustomerCart , getProductByBarcode, getCostumerPhoneNumber} = require('../../controllers/customerController');
 
 const router = Router();
 
@@ -14,6 +14,5 @@ router.patch('/addNewPaymentMethod/:customerPhoneNumber', addNewPaymentMethod);
 router.patch('/cancelOrder/:numOrder', cancelOrder);
 router.get('/getOrders/:customerPhoneNumber', getOrdersHistoryOfCustomer);
 router.get('/getCustomerByPhone/:customerPhone', getCustomerByPhone);
-router.patch('/addProductToCart/:phoneNumber', addProductToCustomerCart)
 
 module.exports = router;
