@@ -167,8 +167,8 @@ const getOrdersHistoryOfCustomer = (numPhone) => {
             .catch((error) => {
                 Logger.error(`There was an error at customerLogic: ${error}`);
                 reject(StatusCode.INTERNAL_SERVER_ERROR);
-            })
-    });
+            })
+    });
 };
 
 
