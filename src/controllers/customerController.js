@@ -1,6 +1,9 @@
 const Logger = require('../config/logger');
 const CustomerLogic = require('../logic/customerLogic');
+const Customer = require('../models/customerModel');
 const StatusCode = require('../models/httpStatusCodes');
+const Product = require('../models/productModel');
+const jwt = require('jsonwebtoken');
 
 const getAllUsers = async (req, res) => {
     res.json({
@@ -227,6 +230,22 @@ const getOrdersHistoryOfCustomer = async (req,res) => {
 }
 
 
+const getProductByBarcode = async (req, res) => {
+    try {
+      const { codigoBarras } = req.params;
+      const product = await Product.findOne({ codigoBarras: codigoBarras });
+  
+      if (!product) {
+        return res.status(404).send('Producto no encontrado.');
+      }
+  
+      res.json(product);
+    } catch (error) {
+      res.status(500).send('Error en el servidor: ' + error.message);
+    }
+  };
+
+
 const getCustomerByPhone = async (req, res) => {
     let statusCode = StatusCode.NOT_FOUND
     let responseMessage = "The customer doesn't exist"
@@ -278,6 +297,30 @@ const addProductToCustomerCart = async (req, res) => {
 }
 
 
+const getCostumerPhoneNumber = async (req, res) => {
+    try {
+        const token = req.headers.authorization.split(' ')[1];
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+        const userId = decoded.userId; 
+
+        if (!userId) {
+            return res.status(400).json({ message: 'ID de usuario no proporcionado en el token' });
+        }
+
+        const user = await Customer.findById(userId);
+        
+
+        if (!user) {
+            return res.status(404).json({ message: 'Usuario no encontrado' });
+        }
+
+        res.json({ phone: user.numTelefono });
+    } catch (error) {
+        res.status(500).json({ message: 'Error al procesar la solicitud', error: error.message });
+    }
+}
+
 module.exports = {
     getAllUsers,
     createCustomer,
@@ -290,5 +333,7 @@ module.exports = {
     cancelOrder,
     getCustomerByPhone,
     getProductsByBranch,
-    addProductToCustomerCart
+    addProductToCustomerCart,
+    getProductByBarcode,
+    getCostumerPhoneNumber
 }
