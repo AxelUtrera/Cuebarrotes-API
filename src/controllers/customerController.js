@@ -272,6 +272,55 @@ const getCustomerByPhone = async (req, res) => {
     })
 }
 
+
+const addProductToCustomerCart = async (req, res) => {
+    let statusCode = StatusCode.NOT_FOUND
+    let responseMessage = "Product no added :("
+
+    try{
+        const phoneNumber = req.params.phoneNumber
+        const productInfo = req.body
+
+        statusCode = await CustomerLogic.addProductToCart(phoneNumber, productInfo)
+        if(statusCode === 200){
+            responseMessage = "Product added succesfully :3"
+        }
+    } catch(error) {
+        Logger.error(`There was an error in addProductToCustomerCart controller: ${error}`)
+        statusCode = StatusCode.INTERNAL_SERVER_ERROR
+    }
+
+    return res.status(statusCode).json({
+        code: statusCode,
+        msg: responseMessage
+    })
+}
+
+
+const getCostumerPhoneNumber = async (req, res) => {
+    try {
+        const token = req.headers.authorization.split(' ')[1];
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+        const userId = decoded.userId; 
+
+        if (!userId) {
+            return res.status(400).json({ message: 'ID de usuario no proporcionado en el token' });
+        }
+
+        const user = await Customer.findById(userId);
+        
+
+        if (!user) {
+            return res.status(404).json({ message: 'Usuario no encontrado' });
+        }
+
+        res.json({ phone: user.numTelefono });
+    } catch (error) {
+        res.status(500).json({ message: 'Error al procesar la solicitud', error: error.message });
+    }
+}
+
 module.exports = {
     getAllUsers,
     createCustomer,
