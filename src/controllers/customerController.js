@@ -105,6 +105,33 @@ const getProductsCatalog = async (req, res) => {
 }
 
 
+const getProductsByBranch = async (req, res) => {
+    let resultCode = StatusCode.INTERNAL_SERVER_ERROR;
+    let responseMessage = "Products not obtained";
+    let response = [];
+
+    try{
+        const inventory = req.body
+        const productsObtained = await CustomerLogic.getProductsByInventory(inventory)
+        
+        if(productsObtained != null){
+            response = productsObtained;
+            responseMessage = "Products obtained succesfully"
+            resultCode = StatusCode.OK
+        }
+    } catch(error){
+        Logger.error(`There was an error in getProductsByBranch controller: ${error}`)
+    }
+
+    return res.status(resultCode).json({
+        code: resultCode,
+        msg: responseMessage,
+        response
+    })
+}
+
+
+
 const addNewAddress = async (req, res) => {
     let statusCode = StatusCode.NOT_FOUND;
     let responseMessage = `User doesn't exist`;
@@ -226,6 +253,31 @@ const getCustomerByPhone = async (req, res) => {
     })
 }
 
+
+const addProductToCustomerCart = async (req, res) => {
+    let statusCode = StatusCode.NOT_FOUND
+    let responseMessage = "Product no added :("
+
+    try{
+        const phoneNumber = req.params.phoneNumber
+        const productInfo = req.body
+
+        statusCode = await CustomerLogic.addProductToCart(phoneNumber, productInfo)
+        if(statusCode === 200){
+            responseMessage = "Product added succesfully :3"
+        }
+    } catch(error) {
+        Logger.error(`There was an error in addProductToCustomerCart controller: ${error}`)
+        statusCode = StatusCode.INTERNAL_SERVER_ERROR
+    }
+
+    return res.status(statusCode).json({
+        code: statusCode,
+        msg: responseMessage
+    })
+}
+
+
 module.exports = {
     getAllUsers,
     createCustomer,
@@ -236,5 +288,7 @@ module.exports = {
     getOrdersHistoryOfCustomer,
     addNewPaymentMethod,
     cancelOrder,
-    getCustomerByPhone
+    getCustomerByPhone,
+    getProductsByBranch,
+    addProductToCustomerCart
 }

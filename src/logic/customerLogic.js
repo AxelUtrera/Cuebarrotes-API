@@ -70,6 +70,24 @@ const getAllProducts = () => {
     })
 }
 
+
+const getProductsByInventory = (inventory) => {
+    let products = [];
+    const availableProducts = inventory.filter(product => product.existencias > 0)
+    const barcodes = availableProducts.map(product => product.codigoBarras);
+    return new Promise((resolve, reject) => [
+        products = Product.find({codigoBarras: {$in: barcodes }})
+        .then((products) => {
+            resolve(products)
+        })
+        .catch((error) => {
+            Logger.error(`There was an error obtaining the products: ${error}`)
+            reject(StatusCode.INTERNAL_SERVER_ERROR)
+        })
+    ])
+}
+
+
 const addNewAddress = (newAddress, numberPhone) => {
     return new Promise((resolve, reject) => {
         //Busca el usuario por su numero de telefono y agrega una nueva direcciona al array de direcciones.
@@ -133,8 +151,7 @@ const getOrdersHistoryOfCustomer = (numPhone) => {
     return new Promise((resolve, reject) => {
         getCustomerByPhone(numPhone)
             .then((customer) => {
-                const numPedidos = customer.historialPedidos.map(pedido => pedido.numPedido);
-                Order.find({ numPedido: { $in: numPedidos } })
+                Order.find({ numPedido: { $in: customer.historialPedidos } })
                     .then((result) => {
                         if (result.length > 0) {
                             resolve(result);
@@ -173,6 +190,20 @@ const cancelOrder = (numOrder) => {
 };
 
 
+const addProductToCart = (phoneNumber, product) => {
+    return new Promise((resolve, reject) => {
+        Customer.findOneAndUpdate({numTelefono: phoneNumber}, {$push: {"carritoCompras.productos": product}})
+        .then(() =>{
+            resolve(StatusCode.OK)
+        })
+        .catch((error) => {
+            Logger.error(`There was an error adding the product: ${error}`)
+            reject(StatusCode.INTERNAL_SERVER_ERROR)
+        })
+    })
+}
+
+
 module.exports = {
     createCustomer,
     isCustomerRegister,
@@ -183,4 +214,6 @@ module.exports = {
     getOrdersHistoryOfCustomer,
     cancelOrder,
     addNewPaymentMethod,
+    getProductsByInventory,
+    addProductToCart
 }

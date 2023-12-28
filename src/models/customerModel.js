@@ -77,6 +77,7 @@ const paymentMethodSchema = new mongoose.Schema(
 
 const productSchema = new mongoose.Schema(
     {
+        _id: false,
         codigoBarras:{
             type: String,
             required: true
@@ -133,7 +134,7 @@ const customerSchema = new mongoose.Schema(
             ]
         },
         historialPedidos:[
-            orderHistory
+            
         ]
     }
 )
