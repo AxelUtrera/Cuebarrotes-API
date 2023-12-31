@@ -174,18 +174,34 @@ const getOrdersHistoryOfCustomer = (numPhone) => {
 
 const cancelOrder = (numOrder) => {
     return new Promise((resolve, reject) => {
-        //Busca el pedido por su numero de pedido y cambia el estado a "Cancelado".
-        Order.findOneAndUpdate(
-            { numPedido: numOrder },
-            { estado: "Cancelado" }
-        )
+        // Primero, busca el pedido por su número para verificar su estado actual.
+        Order.findOne({ numPedido: numOrder })
+            .then(order => {
+                if (!order) {
+                    // Si la orden no existe, se rechaza la promesa.
+                    return reject(new Error("Order not found"));
+                }
+
+                if (order.estado !== "Preparandose") {
+                    // Si la orden no está en estado "Preparandose", rechaza la promesa.
+                    return reject(new Error("Order cannot be cancelled unless it's in 'Preparandose' state"));
+                }
+
+                // Si la orden está en estado "Preparandose", procede a actualizar el estado a "Cancelado".
+                return Order.findOneAndUpdate(
+                    { numPedido: numOrder },
+                    { estado: "Cancelado" }
+                );
+            })
             .then(() => {
+                // Resuelve la promesa si todo ha ido bien.
                 resolve(StatusCode.OK);
             })
-            .catch((error) => {
-                Logger.error(`There was an error changing the state: ${error}`);
+            .catch(error => {
+                // Maneja cualquier error durante el proceso.
+                Logger.error(`There was an error processing the request: ${error}`);
                 reject(StatusCode.INTERNAL_SERVER_ERROR);
-            })
+            });
     });
 };
 
