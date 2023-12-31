@@ -69,9 +69,24 @@ const getBranchesInfo = () => {
 }
 
 
+const getBranchByName = (branchName) => {
+    return new Promise((resolve, reject) => {
+        Branch.findOne({nombreComercial: branchName})
+        .then((branchObtained) => {
+            resolve(branchObtained)
+        })
+        .catch((error) => {
+            Logger.error(`There was an error obtaining the branch: ${error}`)
+            reject(StatusCode.INTERNAL_SERVER_ERROR)
+        })
+    })
+}
+
+
 module.exports = {
     createProduct,
     addProductToBranch,
     createEmployee,
-    getBranchesInfo
+    getBranchesInfo,
+    getBranchByName
 }

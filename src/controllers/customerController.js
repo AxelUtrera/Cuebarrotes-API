@@ -5,12 +5,6 @@ const StatusCode = require('../models/httpStatusCodes');
 const Product = require('../models/productModel');
 const jwt = require('jsonwebtoken');
 
-const getAllUsers = async (req, res) => {
-    res.json({
-        msg:"Hola mundo"
-    });
-}
-
 
 const createCustomer = async (req, res) => {
     let resultCode = StatusCode.INTERNAL_SERVER_ERROR;
@@ -322,7 +316,6 @@ const getCostumerPhoneNumber = async (req, res) => {
 }
 
 module.exports = {
-    getAllUsers,
     createCustomer,
     customerNotRegistered,
     editCustomerProfile,

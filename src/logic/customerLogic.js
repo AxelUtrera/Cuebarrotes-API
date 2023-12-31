@@ -76,14 +76,14 @@ const getProductsByInventory = (inventory) => {
     const availableProducts = inventory.filter(product => product.existencias > 0)
     const barcodes = availableProducts.map(product => product.codigoBarras);
     return new Promise((resolve, reject) => [
-        products = Product.find({codigoBarras: {$in: barcodes }})
-        .then((products) => {
-            resolve(products)
-        })
-        .catch((error) => {
-            Logger.error(`There was an error obtaining the products: ${error}`)
-            reject(StatusCode.INTERNAL_SERVER_ERROR)
-        })
+        products = Product.find({ codigoBarras: { $in: barcodes } })
+            .then((products) => {
+                resolve(products)
+            })
+            .catch((error) => {
+                Logger.error(`There was an error obtaining the products: ${error}`)
+                reject(StatusCode.INTERNAL_SERVER_ERROR)
+            })
     ])
 }
 
@@ -167,8 +167,8 @@ const getOrdersHistoryOfCustomer = (numPhone) => {
             .catch((error) => {
                 Logger.error(`There was an error at customerLogic: ${error}`);
                 reject(StatusCode.INTERNAL_SERVER_ERROR);
-            })
-    });
+            })
+    });
 };
 
 
@@ -192,14 +192,14 @@ const cancelOrder = (numOrder) => {
 
 const addProductToCart = (phoneNumber, product) => {
     return new Promise((resolve, reject) => {
-        Customer.findOneAndUpdate({numTelefono: phoneNumber}, {$push: {"carritoCompras.productos": product}})
-        .then(() =>{
-            resolve(StatusCode.OK)
-        })
-        .catch((error) => {
-            Logger.error(`There was an error adding the product: ${error}`)
-            reject(StatusCode.INTERNAL_SERVER_ERROR)
-        })
+        Customer.findOneAndUpdate({ numTelefono: phoneNumber }, { $push: { "carritoCompras.productos": product } })
+            .then(() => {
+                resolve(StatusCode.OK)
+            })
+            .catch((error) => {
+                Logger.error(`There was an error adding the product: ${error}`)
+                reject(StatusCode.INTERNAL_SERVER_ERROR)
+            })
     })
 }
 

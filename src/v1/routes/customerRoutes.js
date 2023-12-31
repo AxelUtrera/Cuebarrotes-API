@@ -1,6 +1,5 @@
 const { Router } = require('express');
 const { 
-    getAllUsers, 
     createCustomer, 
     customerNotRegistered, 
     editCustomerProfile, 
@@ -17,7 +16,7 @@ const {
 } = require('../../controllers/customerController');
 const router = Router();
 
-router.get('/', getAllUsers);
+
 router.post('/registerCustomer', createCustomer);
 router.get('/customerNotRegistered/:numTelefono', customerNotRegistered);
 router.patch('/modifyProfile/:customerPhoneNumber', editCustomerProfile);
