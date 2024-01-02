@@ -3,6 +3,8 @@ const CustomerLogic = require('../logic/customerLogic');
 const Customer = require('../models/customerModel');
 const StatusCode = require('../models/httpStatusCodes');
 const Product = require('../models/productModel');
+const Order = require('../models/orderModel');
+const mongoose = require("mongoose");
 const jwt = require('jsonwebtoken');
 
 
@@ -315,6 +317,39 @@ const getCostumerPhoneNumber = async (req, res) => {
     }
 }
 
+const reportOrder = async (req, res) => {
+    const numPedido = req.params.numPedido;
+    const { IdIncidente, descripcion, fotografia } = req.body;
+
+    try {
+        // Buscar el pedido por el número de pedido
+        const order = await Order.findOne({ numPedido: numPedido });
+
+        // Verificar si el pedido existe y si no tiene un incidente reportado previamente
+        if (!order) {
+            return res.status(404).json({ message: 'Pedido no encontrado.' });
+        }
+
+        if (order.incidente && order.incidente.IdIncidente) {
+            return res.status(400).json({ message: 'El pedido ya tiene un incidente reportado.' });
+        }
+
+        // Actualizar el pedido con los detalles del incidente
+        order.incidente = {
+            IdIncidente: IdIncidente || new mongoose.Types.ObjectId(), // Generar un nuevo ObjectId si no se proporciona
+            descripcion: descripcion,
+            fotografia: fotografia
+        };
+
+        await order.save(); // Guardar el pedido actualizado
+
+        res.status(200).json({ message: 'Incidente reportado con éxito.', order: order });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error al reportar el incidente.', error: error });
+    }
+}
+
 module.exports = {
     createCustomer,
     customerNotRegistered,
@@ -328,5 +363,6 @@ module.exports = {
     getProductsByBranch,
     addProductToCustomerCart,
     getProductByBarcode,
-    getCostumerPhoneNumber
+    getCostumerPhoneNumber,
+    reportOrder
 }
