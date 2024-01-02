@@ -205,7 +205,6 @@ const cancelOrder = (numOrder) => {
     });
 };
 
-
 const addProductToCart = (phoneNumber, product) => {
     return new Promise((resolve, reject) => {
         Customer.findOneAndUpdate({numTelefono: phoneNumber}, {$push: {"carritoCompras.productos": product}})

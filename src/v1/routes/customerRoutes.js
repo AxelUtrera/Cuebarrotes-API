@@ -13,7 +13,8 @@ const {
     getCustomerByPhone, 
     addProductToCustomerCart, 
     getProductByBarcode, 
-    getCostumerPhoneNumber 
+    getCostumerPhoneNumber,
+    reportOrder 
 } = require('../../controllers/customerController');
 const router = Router();
 
@@ -31,5 +32,6 @@ router.get('/getCustomerByPhone/:customerPhone', getCustomerByPhone);
 router.patch('/addProductToCart/:phoneNumber', addProductToCustomerCart)
 router.get('/products/:codigoBarras', getProductByBarcode);
 router.get("/user/phone", getCostumerPhoneNumber);
+router.post('/report-incident/:numPedido', reportOrder);
 
 module.exports = router;
