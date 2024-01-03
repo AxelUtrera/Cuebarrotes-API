@@ -116,11 +116,71 @@ const finishOrderWithProblems = (orderNumber, reason) => {
 }
 
 
+
+const getPendingOrders = () => {
+    return new Promise((resolve, reject) => {
+        Order.find({estado: "Preparandose"})
+        .then((orders) => {
+            resolve(orders)
+        })
+        .catch((error) => {
+            Logger.error(`There was an error obtaining the pending orders: ${error}`)
+            reject(StatusCode.INTERNAL_SERVER_ERROR)
+        })
+    })
+}
+
+
+const rejectOrder = (orderNumber) => {
+    return new Promise((resolve, reject) => {
+        Order.findOneAndUpdate({numPedido : orderNumber}, {estado: "Rechazado"})
+        .then(() => {
+            resolve(StatusCode.OK)
+        })
+        .catch((error) => {
+            Logger.error(`There was an error rejecting the order: ${error}`)
+            reject(StatusCode.INTERNAL_SERVER_ERROR)
+        })
+    })
+}
+
+
+const getDeliveryMans = () => {
+    return new Promise((resolve, reject) => {
+        Employee.find({rol: "Repartidor"})
+        .then((deliveryMans) => {
+            resolve(deliveryMans)
+        })
+        .catch((error) => {
+            Logger.error(`There was an error obtaining delivery mans: ${error}`)
+            reject(StatusCode.INTERNAL_SERVER_ERROR)
+        })
+    })
+}
+
+
+const changeOrderStatus = (orderNumber, status) => {
+    return new Promise((resolve, reject) => {
+        Order.findOneAndUpdate({numPedido: orderNumber}, {estado: status})
+        .then(() => {
+            resolve(StatusCode.OK)
+        })
+        .catch((error) => {
+            Logger.error(`There was an error changing the order status: ${error}`)
+            reject(StatusCode.INTERNAL_SERVER_ERROR)
+        })
+    })
+}
+
 module.exports = {
     addOrderToDeliveryMan,
     getDeliveryManOrders,
     getOrdersDetails,
     getOrderProducts,
     finishOrder,
-    finishOrderWithProblems
+    finishOrderWithProblems,
+    getPendingOrders,
+    rejectOrder,
+    getDeliveryMans,
+    changeOrderStatus
 }
