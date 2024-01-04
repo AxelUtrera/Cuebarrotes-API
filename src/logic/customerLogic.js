@@ -90,7 +90,6 @@ const getProductsByInventory = (inventory) => {
 
 const addNewAddress = (newAddress, numberPhone) => {
     return new Promise((resolve, reject) => {
-        //Busca el usuario por su numero de telefono y agrega una nueva direcciona al array de direcciones.
         Customer.findOneAndUpdate(
             { numTelefono: numberPhone },
             { $push: { direcciones: newAddress } },
@@ -111,7 +110,6 @@ const addNewAddress = (newAddress, numberPhone) => {
 
 const addNewPaymentMethod = (newPaymentMethod, numberPhone) => {
     return new Promise((resolve, reject) => {
-        //Busca el usuario por su numero de telefono y agrega una nuevo metodo de pago al array de metodos de pago.
         Customer.findOneAndUpdate(
             { numTelefono: numberPhone },
             { $push: { metodosPago: newPaymentMethod } },
@@ -174,31 +172,25 @@ const getOrdersHistoryOfCustomer = (numPhone) => {
 
 const cancelOrder = (numOrder) => {
     return new Promise((resolve, reject) => {
-        // Primero, busca el pedido por su número para verificar su estado actual.
         Order.findOne({ numPedido: numOrder })
             .then(order => {
                 if (!order) {
-                    // Si la orden no existe, se rechaza la promesa.
                     return reject(new Error("Order not found"));
                 }
 
                 if (order.estado !== "Preparandose") {
-                    // Si la orden no está en estado "Preparandose", rechaza la promesa.
                     return reject(new Error("Order cannot be cancelled unless it's in 'Preparandose' state"));
                 }
 
-                // Si la orden está en estado "Preparandose", procede a actualizar el estado a "Cancelado".
                 return Order.findOneAndUpdate(
                     { numPedido: numOrder },
                     { estado: "Cancelado" }
                 );
             })
             .then(() => {
-                // Resuelve la promesa si todo ha ido bien.
                 resolve(StatusCode.OK);
             })
             .catch(error => {
-                // Maneja cualquier error durante el proceso.
                 Logger.error(`There was an error processing the request: ${error}`);
                 reject(StatusCode.INTERNAL_SERVER_ERROR);
             });
@@ -207,16 +199,43 @@ const cancelOrder = (numOrder) => {
 
 const addProductToCart = (phoneNumber, product) => {
     return new Promise((resolve, reject) => {
-        Customer.findOneAndUpdate({ numTelefono: phoneNumber }, { $push: { "carritoCompras.productos": product } })
+        // Buscar el cliente por número de teléfono
+        Customer.findOne({ numTelefono: phoneNumber })
+            .then(customer => {
+                if (!customer) {
+                    // Cliente no encontrado
+                    reject(StatusCode.NOT_FOUND);
+                    return;
+                }
+
+                // Verificar si el producto ya está en el carrito
+                const existingProduct = customer.carritoCompras.productos.find(
+                    p => p.codigoBarras === product.codigoBarras
+                );
+
+                if (existingProduct) {
+                    // Si el producto ya está en el carrito, incrementar la cantidad
+                    existingProduct.cantidad = existingProduct.cantidad + 1;
+                } else {
+                    // Si el producto no está en el carrito, agregarlo
+                    customer.carritoCompras.productos.push(product);
+                }
+
+                // Guardar los cambios en la base de datos
+                return customer.save();
+            })
             .then(() => {
-                resolve(StatusCode.OK)
+                // Éxito
+                resolve(StatusCode.OK);
             })
-            .catch((error) => {
-                Logger.error(`There was an error adding the product: ${error}`)
-                reject(StatusCode.INTERNAL_SERVER_ERROR)
-            })
-    })
-}
+            .catch(error => {
+                // Manejar errores
+                Logger.error(`There was an error adding the product: ${error}`);
+                reject(StatusCode.INTERNAL_SERVER_ERROR);
+            });
+    });
+};
+
 
 
 module.exports = {

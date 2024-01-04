@@ -6,7 +6,7 @@ const Product = require('../models/productModel')
 
 const addOrderToDeliveryMan = (employeeNumber, orderAsigned) => {
     return new Promise((resolve, reject) => {
-        Employee.findOneAndUpdate({ numEmpleado: employeeNumber }, {$push: {pedidosAsignados: orderAsigned}})
+        Employee.findOneAndUpdate({ numTelefono: employeeNumber }, {$push: {pedidosAsignados: orderAsigned}})
         .then(() => {
             resolve(StatusCode.OK)
         })
@@ -20,7 +20,7 @@ const addOrderToDeliveryMan = (employeeNumber, orderAsigned) => {
 
 const getDeliveryMan = (employeeNumber) => {
     return new Promise((resolve, reject) => {
-        const deliveryMan = Employee.findOne({numEmpleado: employeeNumber})
+        const deliveryMan = Employee.findOne({numTelefono: employeeNumber})
         .then((deliveryMan) => {
             resolve(deliveryMan)
         })
