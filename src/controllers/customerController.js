@@ -614,7 +614,7 @@ const registerOrder = async (req, res) => {
             },
             total: total,
             sucursal: sucursal,
-            estado: 'Procesándose',
+            estado: 'Procesandose',
             ubicacion: {
                 lat: customerDireccion.ubicacion.lat, // Utilizar la latitud de la ubicación encontrada
                 lng: customerDireccion.ubicacion.lng  // Utilizar la longitud de la ubicación encontrada
@@ -632,6 +632,42 @@ const registerOrder = async (req, res) => {
         res.status(500).send({ success: false, message: 'Error en el servidor' });
     }
 };
+
+const addPaymentMethod = async (req, res) => {
+    const { tipo, numTarjeta, fechaVencimiento, cvv, titular } = req.body;
+    const token = req.headers['authorization'].split(' ')[1]; // Asume que el token viene en el formato 'Bearer [token]'
+
+    if (!tipo || !numTarjeta || !fechaVencimiento || !cvv || !titular) {
+        return res.status(400).send('Datos incompletos o incorrectos para el método de pago');
+    }
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const customerId = decoded.userId;
+        const customer = await Customer.findById(customerId);
+
+        if (!customer) {
+            return res.status(404).send('Cliente no encontrado');
+        }
+
+        // Verificar si el número de tarjeta ya está registrado
+        const cardExists = customer.metodosPago.some(method => method.numTarjeta === numTarjeta);
+        if (cardExists) {
+            return res.status(400).send('Tarjeta previamente registrada');
+        }
+
+        // Agregar el nuevo método de pago al arreglo 'metodosPago'
+        const newPaymentMethod = { tipo, numTarjeta, fechaVencimiento, cvv, titular };
+        customer.metodosPago.push(newPaymentMethod);
+        await customer.save();
+        
+        res.json({ success: true, message: 'Método de pago agregado con éxito' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send({ success: false, message: 'Error en el servidor' });
+    }
+};
+
 
 
 module.exports = {
@@ -654,5 +690,6 @@ module.exports = {
     getShoppingCartItems,
     updateCartItemQuantity,
     removeItemFromCart,
-    registerOrder
+    registerOrder,
+    addPaymentMethod
 }

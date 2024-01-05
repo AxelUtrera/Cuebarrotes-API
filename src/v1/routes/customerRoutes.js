@@ -19,7 +19,8 @@ const {
     getShoppingCartItems,
     updateCartItemQuantity,
     removeItemFromCart,
-    registerOrder
+    registerOrder,
+    addPaymentMethod
 } = require('../../controllers/customerController');
 
 const router = Router();
@@ -45,5 +46,6 @@ router.get("/shoppingCart", getShoppingCartItems);
 router.patch("/shoppingCart", updateCartItemQuantity);
 router.delete("/shoppingCart", removeItemFromCart);
 router.post('/registerOrder', registerOrder);
+router.post('/addPaymentMethod', addPaymentMethod);
 
 module.exports = router;
