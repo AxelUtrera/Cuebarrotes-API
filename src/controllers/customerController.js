@@ -130,7 +130,6 @@ const getProductsByBranch = async (req, res) => {
 }
 
 
-
 const addNewAddress = async (req, res) => {
     let statusCode = StatusCode.NOT_FOUND;
     let responseMessage = `User doesn't exist`;
@@ -155,6 +154,7 @@ const addNewAddress = async (req, res) => {
         msg: responseMessage
     });
 }
+
 
 const addNewPaymentMethod = async (req, res) => {
     let statusCode = StatusCode.NOT_FOUND;
@@ -181,6 +181,7 @@ const addNewPaymentMethod = async (req, res) => {
     });
 }
 
+
 const cancelOrder = async (req, res) => {
     let resultCode = StatusCode.INTERNAL_SERVER_ERROR;
     let response = "Order state not modified :(";
@@ -201,6 +202,7 @@ const cancelOrder = async (req, res) => {
         msg: response
     })
 }
+
 
 const getOrdersHistoryOfCustomer = async (req,res) => {
     let statusCode = StatusCode.NOT_FOUND;
@@ -317,6 +319,7 @@ const getCostumerPhoneNumber = async (req, res) => {
     }
 }
 
+
 const reportOrder = async (req, res) => {
     const numPedido = req.params.numPedido;
     const { IdIncidente, descripcion, fotografia } = req.body;
@@ -349,6 +352,7 @@ const reportOrder = async (req, res) => {
         res.status(500).json({ message: 'Error al reportar el incidente.', error: error });
     }
 }
+
 
 const getPaymentMethods = async (req, res) => {
     const authHeader = req.headers['authorization'];
@@ -386,6 +390,7 @@ const getPaymentMethods = async (req, res) => {
     });
 };
 
+
 const getAddresses = async (req, res) => {
     const authHeader = req.headers['authorization'];
 
@@ -420,6 +425,7 @@ const getAddresses = async (req, res) => {
         }
     });
 };
+
 
 const getShoppingCartItems = async (req, res) => {
     const authHeader = req.headers['authorization'];
@@ -472,6 +478,7 @@ const getShoppingCartItems = async (req, res) => {
     });
 };
 
+
 const updateCartItemQuantity = async (req, res) => {
     const { codigoBarras, nuevaCantidad } = req.body;
     const token = req.headers['authorization'].split(' ')[1]; // Asume que el token viene en el formato 'Bearer [token]'
@@ -502,6 +509,7 @@ const updateCartItemQuantity = async (req, res) => {
         res.status(500).send({ success: false, message: 'Error en el servidor' });
     }
 };
+
 
 const removeItemFromCart = async (req, res) => {
     const { codigoBarras } = req.body;
@@ -534,14 +542,13 @@ const removeItemFromCart = async (req, res) => {
     }
 };
 
+
 const generateUniqueOrderId = async () => {
     let isUnique = false;
     let uniqueId;
     while (!isUnique) {
-        // Generar un ID de pedido aleatorio
         uniqueId = Math.floor(Math.random() * 1000000).toString();
 
-        // Verificar si el ID ya está en uso
         const orderExists = await Order.findOne({ numPedido: uniqueId });
         if (!orderExists) {
             isUnique = true;
@@ -550,10 +557,11 @@ const generateUniqueOrderId = async () => {
     return uniqueId;
 };
 
-const registerOrder = async (req, res) => {
-    const { direccion, metodoPago, sucursal } = req.body; // Asumiendo que estos datos vienen en el cuerpo de la solicitud
 
-    const token = req.headers['authorization']?.split(' ')[1]; // Asume que el token viene en el formato 'Bearer [token]'
+const registerOrder = async (req, res) => {
+    const { direccion, metodoPago, sucursal } = req.body;
+
+    const token = req.headers['authorization']?.split(' ')[1];
 
     if (!token || !direccion || !metodoPago || !sucursal) {
         return res.status(400).send('Datos incompletos');
@@ -568,25 +576,18 @@ const registerOrder = async (req, res) => {
             return res.status(404).send('Cliente no encontrado');
         }
 
-        // Buscar la dirección para obtener la ubicación
         const customerDireccion = customer.direcciones.find(d => d.calle === direccion);
         if (!customerDireccion) {
             return res.status(404).send('Dirección no encontrada');
         }
 
-        // Calcular el total
-         // Inicializar el total a 0
          let total = 0;
 
-         // Inicializar un array vacío para agregar los productos procesados
          const productsToAdd = [];
  
-         // Usar un bucle for...of para procesar asincrónicamente cada producto
          for (let item of customer.carritoCompras.productos) {
-            // Utiliza findOne para buscar por codigoBarras en lugar de findById
             const productDetails = await Product.findOne({ codigoBarras: item.codigoBarras });
             if (!productDetails) {
-                // Manejar el caso donde el producto no se encuentra, si es necesario
                 continue;
             }
             total += productDetails.precioUnitario * item.cantidad;
@@ -598,14 +599,13 @@ const registerOrder = async (req, res) => {
 
         const numPedido = await generateUniqueOrderId();
 
-        // Crear un nuevo pedido
         const newOrder = new Order({
             numPedido: numPedido,
             fechaPedido: new Date(),
             numTelefonoConsumidor: customer.numTelefono,
             direccion: direccion,
             metodoPago: metodoPago,
-            repartidor: '', // Asignar un repartidor o dejar vacío según la lógica de la aplicación
+            repartidor: '',
             productos: await Promise.all(productsToAdd),
             incidente: {
                 IdIncidente: '',
@@ -616,8 +616,8 @@ const registerOrder = async (req, res) => {
             sucursal: sucursal,
             estado: 'Procesandose',
             ubicacion: {
-                lat: customerDireccion.ubicacion.lat, // Utilizar la latitud de la ubicación encontrada
-                lng: customerDireccion.ubicacion.lng  // Utilizar la longitud de la ubicación encontrada
+                lat: customerDireccion.ubicacion.lat,
+                lng: customerDireccion.ubicacion.lng 
             }
         });
 
@@ -635,7 +635,7 @@ const registerOrder = async (req, res) => {
 
 const addPaymentMethod = async (req, res) => {
     const { tipo, numTarjeta, fechaVencimiento, cvv, titular } = req.body;
-    const token = req.headers['authorization'].split(' ')[1]; // Asume que el token viene en el formato 'Bearer [token]'
+    const token = req.headers['authorization'].split(' ')[1];
 
     if (!tipo || !numTarjeta || !fechaVencimiento || !cvv || !titular) {
         return res.status(400).send('Datos incompletos o incorrectos para el método de pago');
@@ -650,13 +650,11 @@ const addPaymentMethod = async (req, res) => {
             return res.status(404).send('Cliente no encontrado');
         }
 
-        // Verificar si el número de tarjeta ya está registrado
         const cardExists = customer.metodosPago.some(method => method.numTarjeta === numTarjeta);
         if (cardExists) {
             return res.status(400).send('Tarjeta previamente registrada');
         }
 
-        // Agregar el nuevo método de pago al arreglo 'metodosPago'
         const newPaymentMethod = { tipo, numTarjeta, fechaVencimiento, cvv, titular };
         customer.metodosPago.push(newPaymentMethod);
         await customer.save();
