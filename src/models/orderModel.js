@@ -38,7 +38,7 @@ const orderSchema = new mongoose.Schema(
         },
         repartidor: {
             type: String,
-            required: true
+            required: false
         },
         productos: [
             productOrderSchema
@@ -69,6 +69,10 @@ const orderSchema = new mongoose.Schema(
         },
         motivo: {
             type: String
+        },
+        ubicacion: {
+            lat: { type: String, required: true },
+            lng: { type: String, required: true }
         }
     }
 );

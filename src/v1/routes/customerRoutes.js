@@ -13,8 +13,15 @@ const {
     addProductToCustomerCart, 
     getProductByBarcode, 
     getCostumerPhoneNumber,
-    reportOrder 
+    reportOrder,
+    getPaymentMethods,
+    getAddresses,
+    getShoppingCartItems,
+    updateCartItemQuantity,
+    removeItemFromCart,
+    registerOrder
 } = require('../../controllers/customerController');
+
 const router = Router();
 
 
@@ -32,5 +39,11 @@ router.patch('/addProductToCart/:phoneNumber', addProductToCustomerCart)
 router.get('/products/:codigoBarras', getProductByBarcode);
 router.get("/user/phone", getCostumerPhoneNumber);
 router.post('/report-incident/:numPedido', reportOrder);
+router.get("/paymentMethods", getPaymentMethods);
+router.get("/addresses", getAddresses);
+router.get("/shoppingCart", getShoppingCartItems);
+router.patch("/shoppingCart", updateCartItemQuantity);
+router.delete("/shoppingCart", removeItemFromCart);
+router.post('/registerOrder', registerOrder);
 
 module.exports = router;
