@@ -25,6 +25,7 @@ const createEmployee = async (req, res) => {
     })
 }
 
+
 const createProduct = async (req, res) => {
     let resultCode = StatusCode.INTERNAL_SERVER_ERROR;
     let response = "Product not created"
@@ -80,7 +81,6 @@ const addProductToBranch = async (req, res) => {
 };
 
 
-
 const getBranches = async (req, res) => {
     let resultCode = StatusCode.INTERNAL_SERVER_ERROR
     let responseMessage = "Branches not obtained :("
@@ -102,6 +102,7 @@ const getBranches = async (req, res) => {
         response
     })
 }
+
 
 const createBranch = async (req, res) => {
     let resultCode = StatusCode.INTERNAL_SERVER_ERROR;

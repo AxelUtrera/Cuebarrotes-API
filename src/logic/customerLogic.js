@@ -199,37 +199,29 @@ const cancelOrder = (numOrder) => {
 
 const addProductToCart = (phoneNumber, product) => {
     return new Promise((resolve, reject) => {
-        // Buscar el cliente por número de teléfono
         Customer.findOne({ numTelefono: phoneNumber })
             .then(customer => {
                 if (!customer) {
-                    // Cliente no encontrado
                     reject(StatusCode.NOT_FOUND);
                     return;
                 }
 
-                // Verificar si el producto ya está en el carrito
                 const existingProduct = customer.carritoCompras.productos.find(
                     p => p.codigoBarras === product.codigoBarras
                 );
 
                 if (existingProduct) {
-                    // Si el producto ya está en el carrito, incrementar la cantidad
                     existingProduct.cantidad = existingProduct.cantidad + 1;
                 } else {
-                    // Si el producto no está en el carrito, agregarlo
                     customer.carritoCompras.productos.push(product);
                 }
 
-                // Guardar los cambios en la base de datos
                 return customer.save();
             })
             .then(() => {
-                // Éxito
                 resolve(StatusCode.OK);
             })
             .catch(error => {
-                // Manejar errores
                 Logger.error(`There was an error adding the product: ${error}`);
                 reject(StatusCode.INTERNAL_SERVER_ERROR);
             });

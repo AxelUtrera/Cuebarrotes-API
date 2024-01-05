@@ -119,7 +119,7 @@ const finishOrderWithProblems = (orderNumber, reason) => {
 
 const getPendingOrders = () => {
     return new Promise((resolve, reject) => {
-        Order.find({estado: "Preparandose"})
+        Order.find({estado: "Procesandose"})
         .then((orders) => {
             resolve(orders)
         })
