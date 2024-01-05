@@ -4,6 +4,7 @@ const Customer = require('../models/customerModel');
 const StatusCode = require('../models/httpStatusCodes');
 const Product = require('../models/productModel');
 const Order = require('../models/orderModel');
+const Employee = require('../models/employeeModel');
 const mongoose = require("mongoose");
 const jwt = require('jsonwebtoken');
 
@@ -616,12 +617,17 @@ const registerOrder = async (req, res) => {
             sucursal: sucursal,
             estado: 'Procesandose',
             ubicacion: {
-                lat: customerDireccion.ubicacion.lat, // Utilizar la latitud de la ubicación encontrada
-                lng: customerDireccion.ubicacion.lng  // Utilizar la longitud de la ubicación encontrada
+                lat: customerDireccion.ubicacion.lat,
+                lng: customerDireccion.ubicacion.lng 
             }
         });
 
         await newOrder.save();
+
+        customer.historialPedidos.push({
+            numPedido: newOrder.numPedido,
+            fechaPedido: newOrder.fechaPedido
+        });
 
         customer.carritoCompras.productos = [];
         await customer.save();

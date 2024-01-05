@@ -7,7 +7,8 @@ const {
     deliverOrderWithProblems, 
     getPendingOrders, 
     rejectOrder, 
-    getDeliveryMans } = require('../../controllers/employeeController');
+    getDeliveryMans,
+    addEmployee } = require('../../controllers/employeeController');
 
 const router = Router();
 
@@ -19,5 +20,6 @@ router.patch('/deliverOrderWithProblems/:orderNumber', deliverOrderWithProblems)
 router.get('/getPendingOrders', getPendingOrders)
 router.patch('/rejectOrder/:orderNumber', rejectOrder)
 router.get('/getDeliveryMans', getDeliveryMans)
+router.post('/addEmployee', addEmployee)
 
 module.exports = router;
