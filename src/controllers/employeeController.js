@@ -4,6 +4,7 @@ const administratorLogic = require('../logic/administratorLogic')
 const customerLogic = require('../logic/customerLogic')
 const Logger = require('../config/logger')
 const jwt = require('jsonwebtoken')
+const Employee = require('../models/employeeModel');
 
 const asignToDeliveryMan = async (req, res) => {
     let resultCode = StatusCode.INTERNAL_SERVER_ERROR;
