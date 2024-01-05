@@ -624,10 +624,8 @@ const registerOrder = async (req, res) => {
 
         await newOrder.save();
 
-        customer.historialPedidos.push({
-            numPedido: newOrder.numPedido,
-            fechaPedido: newOrder.fechaPedido
-        });
+        customer.historialPedidos.push(
+            newOrder.numPedido);
 
         customer.carritoCompras.productos = [];
         await customer.save();
