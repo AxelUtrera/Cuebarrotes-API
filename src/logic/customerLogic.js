@@ -218,7 +218,6 @@ const addProductToCart = (phoneNumber, product) => {
     })
 }
 
-
 module.exports = {
     createCustomer,
     isCustomerRegister,

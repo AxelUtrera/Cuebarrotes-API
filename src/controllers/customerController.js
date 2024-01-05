@@ -350,6 +350,290 @@ const reportOrder = async (req, res) => {
     }
 }
 
+const getPaymentMethods = async (req, res) => {
+    const authHeader = req.headers['authorization'];
+
+    if (!authHeader) return res.sendStatus(401); 
+
+    const tokenParts = authHeader.split(' ');
+
+    if (tokenParts.length !== 2 || tokenParts[0] !== 'Bearer') return res.sendStatus(401); 
+
+    const token = tokenParts[1];
+    
+
+    jwt.verify(token, process.env.JWT_SECRET, async (err, user) => {
+        if (err) return res.sendStatus(403); 
+
+        try {
+            const customerId = user.userId; 
+            
+            const customer = await Customer.findById(customerId);
+
+            if (!customer) {
+                return res.status(404).send('Cliente no encontrado');
+            }
+
+            if (customer.metodosPago.length === 0) {
+                return res.status(404).send('No hay métodos de pago disponibles para este cliente');
+            }
+
+            res.json(customer.metodosPago);
+        } catch (error) {
+            console.error(error); 
+            res.status(500).send('Error en el servidor');
+        }
+    });
+};
+
+const getAddresses = async (req, res) => {
+    const authHeader = req.headers['authorization'];
+
+    if (!authHeader) return res.sendStatus(401);
+
+    const tokenParts = authHeader.split(' ');
+
+    if (tokenParts.length !== 2 || tokenParts[0] !== 'Bearer') return res.sendStatus(401);
+
+    const token = tokenParts[1];
+
+    jwt.verify(token, process.env.JWT_SECRET, async (err, user) => {
+        if (err) return res.sendStatus(403);
+
+        try {
+            const customerId = user.userId;
+            
+            const customer = await Customer.findById(customerId);
+
+            if (!customer) {
+                return res.status(404).send('Cliente no encontrado');
+            }
+
+            if (customer.direcciones.length === 0) {
+                return res.status(404).send('No hay direcciones disponibles para este cliente');
+            }
+
+            res.json(customer.direcciones);
+        } catch (error) {
+            console.error(error);
+            res.status(500).send('Error en el servidor');
+        }
+    });
+};
+
+const getShoppingCartItems = async (req, res) => {
+    const authHeader = req.headers['authorization'];
+
+    if (!authHeader) return res.sendStatus(401);
+
+    const tokenParts = authHeader.split(' ');
+
+    if (tokenParts.length !== 2 || tokenParts[0] !== 'Bearer') return res.sendStatus(401);
+
+    const token = tokenParts[1];
+
+    jwt.verify(token, process.env.JWT_SECRET, async (err, user) => {
+        if (err) return res.sendStatus(403);
+
+        try {
+            const customerId = user.userId;
+            
+            const customer = await Customer.findById(customerId).populate('carritoCompras.productos.codigoBarras');
+
+            if (!customer) {
+                return res.status(404).send('Cliente no encontrado');
+            }
+
+            if (customer.carritoCompras.productos.length === 0) {
+                return res.status(404).send('No hay productos en el carrito');
+            }
+
+            // Creamos un array para almacenar la información completa de los productos
+            let cartItemsDetails = [];
+            for (let cartItem of customer.carritoCompras.productos) {
+                let productDetails = await Product.findOne({ codigoBarras: cartItem.codigoBarras });
+                if (productDetails) {
+                    cartItemsDetails.push({
+                        ...productDetails.toObject(),
+                        cantidad: cartItem.cantidad
+                    });
+                }
+            }
+
+            if (cartItemsDetails.length === 0) {
+                return res.status(404).send('Error al recuperar productos');
+            }
+
+            res.json(cartItemsDetails);
+        } catch (error) {
+            console.error(error);
+            res.status(500).send('Error en el servidor');
+        }
+    });
+};
+
+const updateCartItemQuantity = async (req, res) => {
+    const { codigoBarras, nuevaCantidad } = req.body;
+    const token = req.headers['authorization'].split(' ')[1]; // Asume que el token viene en el formato 'Bearer [token]'
+
+    if (!codigoBarras || typeof nuevaCantidad !== 'number') {
+        return res.status(400).send('Datos incompletos o incorrectos');
+    }
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const customerId = decoded.userId;
+        const customer = await Customer.findById(customerId);
+
+        if (!customer) {
+            return res.status(404).send('Cliente no encontrado');
+        }
+
+        const productIndex = customer.carritoCompras.productos.findIndex(p => p.codigoBarras === codigoBarras);
+        if (productIndex === -1) {
+            return res.status(404).send('Producto no encontrado en el carrito');
+        }
+
+        customer.carritoCompras.productos[productIndex].cantidad = nuevaCantidad;
+        await customer.save();
+        res.json({ success: true, message: 'Cantidad actualizada con éxito' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send({ success: false, message: 'Error en el servidor' });
+    }
+};
+
+const removeItemFromCart = async (req, res) => {
+    const { codigoBarras } = req.body;
+    const token = req.headers['authorization'].split(' ')[1]; // Asume que el token viene en el formato 'Bearer [token]'
+
+    if (!codigoBarras) {
+        return res.status(400).send('Datos incompletos');
+    }
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const customerId = decoded.userId;
+        const customer = await Customer.findById(customerId);
+
+        if (!customer) {
+            return res.status(404).send('Cliente no encontrado');
+        }
+
+        const productIndex = customer.carritoCompras.productos.findIndex(p => p.codigoBarras === codigoBarras);
+        if (productIndex === -1) {
+            return res.status(404).send('Producto no encontrado en el carrito');
+        }
+
+        customer.carritoCompras.productos.splice(productIndex, 1);
+        await customer.save();
+        res.json({ success: true, message: 'Producto eliminado con éxito' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send({ success: false, message: 'Error en el servidor' });
+    }
+};
+
+const generateUniqueOrderId = async () => {
+    let isUnique = false;
+    let uniqueId;
+    while (!isUnique) {
+        // Generar un ID de pedido aleatorio
+        uniqueId = Math.floor(Math.random() * 1000000).toString();
+
+        // Verificar si el ID ya está en uso
+        const orderExists = await Order.findOne({ numPedido: uniqueId });
+        if (!orderExists) {
+            isUnique = true;
+        }
+    }
+    return uniqueId;
+};
+
+const registerOrder = async (req, res) => {
+    const { direccion, metodoPago, sucursal } = req.body; // Asumiendo que estos datos vienen en el cuerpo de la solicitud
+
+    const token = req.headers['authorization']?.split(' ')[1]; // Asume que el token viene en el formato 'Bearer [token]'
+
+    if (!token || !direccion || !metodoPago || !sucursal) {
+        return res.status(400).send('Datos incompletos');
+    }
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const customerId = decoded.userId;
+        const customer = await Customer.findById(customerId).populate('carritoCompras.productos.codigoBarras');
+
+        if (!customer) {
+            return res.status(404).send('Cliente no encontrado');
+        }
+
+        // Buscar la dirección para obtener la ubicación
+        const customerDireccion = customer.direcciones.find(d => d.calle === direccion);
+        if (!customerDireccion) {
+            return res.status(404).send('Dirección no encontrada');
+        }
+
+        // Calcular el total
+         // Inicializar el total a 0
+         let total = 0;
+
+         // Inicializar un array vacío para agregar los productos procesados
+         const productsToAdd = [];
+ 
+         // Usar un bucle for...of para procesar asincrónicamente cada producto
+         for (let item of customer.carritoCompras.productos) {
+            // Utiliza findOne para buscar por codigoBarras en lugar de findById
+            const productDetails = await Product.findOne({ codigoBarras: item.codigoBarras });
+            if (!productDetails) {
+                // Manejar el caso donde el producto no se encuentra, si es necesario
+                continue;
+            }
+            total += productDetails.precioUnitario * item.cantidad;
+            productsToAdd.push({
+                codigoBarras: item.codigoBarras,
+                cantidad: item.cantidad
+            });
+        }
+
+        const numPedido = await generateUniqueOrderId();
+
+        // Crear un nuevo pedido
+        const newOrder = new Order({
+            numPedido: numPedido,
+            fechaPedido: new Date(),
+            numTelefonoConsumidor: customer.numTelefono,
+            direccion: direccion,
+            metodoPago: metodoPago,
+            repartidor: '', // Asignar un repartidor o dejar vacío según la lógica de la aplicación
+            productos: await Promise.all(productsToAdd),
+            incidente: {
+                IdIncidente: '',
+                descripcion: '',
+                fotografia: ''
+            },
+            total: total,
+            sucursal: sucursal,
+            estado: 'Procesándose',
+            ubicacion: {
+                lat: customerDireccion.ubicacion.lat, // Utilizar la latitud de la ubicación encontrada
+                lng: customerDireccion.ubicacion.lng  // Utilizar la longitud de la ubicación encontrada
+            }
+        });
+
+        await newOrder.save();
+
+        customer.carritoCompras.productos = [];
+        await customer.save();
+
+        res.json({ success: true, message: 'Pedido registrado con éxito', order: newOrder });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send({ success: false, message: 'Error en el servidor' });
+    }
+};
+
+
 module.exports = {
     createCustomer,
     customerNotRegistered,
@@ -364,5 +648,11 @@ module.exports = {
     addProductToCustomerCart,
     getProductByBarcode,
     getCostumerPhoneNumber,
-    reportOrder
+    reportOrder,
+    getPaymentMethods,
+    getAddresses,
+    getShoppingCartItems,
+    updateCartItemQuantity,
+    removeItemFromCart,
+    registerOrder
 }
