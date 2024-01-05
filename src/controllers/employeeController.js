@@ -4,6 +4,7 @@ const administratorLogic = require('../logic/administratorLogic')
 const customerLogic = require('../logic/customerLogic')
 const Logger = require('../config/logger')
 const jwt = require('jsonwebtoken')
+const Employee = require('../models/employeeModel');
 
 const asignToDeliveryMan = async (req, res) => {
     let resultCode = StatusCode.INTERNAL_SERVER_ERROR;
@@ -267,8 +268,9 @@ async function generateEmployeeNumber() {
 
 
 const addEmployee = async (req, res) => {
-    const { nombre, apellido, numero, nss, contrasena, rol } = req.body;
-    const token = req.headers['authorization'].split(' ')[1]; // Asume que el token viene en el formato 'Bearer [token]'
+    const { nombre, apellido, numero, nss, contrasena, rol} = req.body; 
+
+    const token = req.headers['authorization'].split(' ')[1];
 
     if (!nombre || !apellido || !numero || !nss || !contrasena || !rol) {
         return res.status(400).send('Datos incompletos o incorrectos para el registro del empleado');
@@ -277,27 +279,31 @@ const addEmployee = async (req, res) => {
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         
-        // Verifica si el rol del usuario es Administrador
         if (decoded.role !== 'Administrador') {
             return res.status(403).send('Acceso denegado: solo los administradores pueden registrar empleados');
         }
 
-        // Verificar si el empleado ya está registrado
         const employeeExists = await Employee.findOne({ nss: nss });
         if (employeeExists) {
             return res.status(400).send('Empleado ya registrado');
         }
 
-        // Registrar el nuevo empleado
+        const employeeExistsByPhone = await Employee.findOne({ numTelefono: numero });
+        if (employeeExistsByPhone) {
+            return res.status(400).send('Número de teléfono ya registrado');
+        }
+
+        const numEmpleado = await generateEmployeeNumber();
+
         const newEmployee = new Employee({
             nombre,
-            apellidoPaterno: apellido.split(" ")[0], // Asume que el apellido paterno es el primero
-            apellidoMaterno: apellido.split(" ")[1] || "", // Asume que el segundo elemento es el apellido materno
+            apellidoPaterno: apellido.split(" ")[0], 
+            apellidoMaterno: apellido.split(" ")[1] || "", 
             numTelefono: numero,
             nss,
             contrasenia: contrasena,
-            numEmpleado: generateEmployeeNumber(), // Función para generar un número de empleado único
-            rol
+            numEmpleado, 
+            rol 
         });
 
         await newEmployee.save();
@@ -308,6 +314,7 @@ const addEmployee = async (req, res) => {
         res.status(500).send({ success: false, message: 'Error en el servidor' });
     }
 };
+
 
 module.exports = {
     asignToDeliveryMan,

@@ -11,10 +11,6 @@ const EmployeeSchema = new mongoose.Schema(
             type: String,
             required: true
         },
-        sucursal: {
-            type: String,
-            required: true
-        },
         nombre: {
             type: String,
             required: true
